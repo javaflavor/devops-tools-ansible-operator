@@ -21,13 +21,13 @@ $ oc process -f deploy.yaml | oc create -f -
 Create Custom Resource (CR) and start apps.
 
 ```bash
-$ oc create -f cr.yaml
+$ oc create -f toolset-crs.yaml
 ```
 
 Undeploy apps.
 
 ```bash
-$ oc delete -f cr.yaml
+$ oc delete -f toolset-crs.yaml
 ```
 
 Undeploy Operator.
