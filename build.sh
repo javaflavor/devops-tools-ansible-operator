@@ -1,7 +1,7 @@
 #!/bin/sh -v
 
 IMAGE=docker-registry-default.apps.7c01.example.opentlc.com/openshift/devops-tools-operator
-TAG=v0.0.2
+TAG=v0.0.1
 
 operator-sdk build ${IMAGE}:${TAG}
 
