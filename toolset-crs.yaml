@@ -1,9 +1,8 @@
+---
 apiVersion: example.redhat.com/v1alpha1
-kind: DevOpsTools
+kind: Gogs
 metadata:
-  name: devopstools
-  annotations:
-    ansible.operator-sdk/reconcile-period: "60s"
+  name: gogs
 spec:
   gogs:
     enabled: true
@@ -17,16 +16,28 @@ spec:
       volumeSize: 2Gi
       # image: registry.redhat.io/rhscl/postgresql-96-rhel7
       # imageTag: latest
+---
+apiVersion: example.redhat.com/v1alpha1
+kind: Jenkins
+metadata:
+  name: jenkins
+spec:
   jenkins:
     enabled: true
     volumeSize: 1Gi
     jenkinsDisableAdministrativeMonitors: False
+---
+apiVersion: example.redhat.com/v1alpha1
+kind: SonarQube
+metadata:
+  name: sonarqube
+spec:
   sonarqube:
     enabled: true
     ssl: False
     volumeSize: 1Gi
     # image: docker.io/wkulhanek/gogs
-    imageTag: 7.7
+    # imageTag: 7.7
     postgresql:
       username: sonar_user
       password: sonar_password

@@ -1,5 +1,15 @@
 ---
 - version: v1alpha1
   group: example.redhat.com
-  kind: DevOpsTools
-  playbook: /opt/ansible/playbook.yml
+  kind: Gogs
+  playbook: /opt/ansible/gogs.yaml
+
+- version: v1alpha1
+  group: example.redhat.com
+  kind: Jenkins
+  playbook: /opt/ansible/jenkins.yaml
+
+- version: v1alpha1
+  group: example.redhat.com
+  kind: SonarQube
+  playbook: /opt/ansible/sonarqube.yaml

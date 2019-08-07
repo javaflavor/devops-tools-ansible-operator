@@ -1,0 +1,44 @@
+---
+# DevOps Tools playbook.
+#
+# The following variables come from the ansible-operator
+# - meta.namespace
+# - meta.name (from the name of the CR)
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: Set up PostgreSQL for Gogs
+    include_role:
+      name: ./roles/postgresql-ocp
+    vars:
+      _postgresql_state: "{{ gogs.enabled | ternary('present', 'absent') }}"
+      _postgresql_namespace: "{{ meta.namespace }}"
+      _postgresql_name: "postgresql-gogs"
+      _postgresql_database_name: "gogsdb"
+      _postgresql_user: "{{ gogs.postgresql.username | d('gogs') }}"
+      _postgresql_password: "{{ gogs.postgresql.password | d('gogs') }}"
+      _postgresql_volume_size: "{{ gogs.postgresql.volume_size|d('4Gi') }}"
+      _postgresql_image: "{{ gogs.postgresql.image | d('registry.redhat.io/rhscl/postgresql-96-rhel7') }}"
+      _postgresql_image_tag: "{{ gogs.postgresql.image_tag | d('latest') }}"
+
+  - name: Set Gogs Service name to default value
+    set_fact:
+      gogs_service_name: "gogs"
+    when:
+      gogs_service_name is not defined
+  - name: Set up Gogs
+    include_role:
+      name: ./roles/gogs-ocp
+    vars:
+      _gogs_state: "{{ gogs.enabled | ternary('present', 'absent') }}"
+      _gogs_namespace: "{{ meta.namespace }}"
+      _gogs_name: "{{ gogs_service_name }}"
+      _gogs_ssl: "{{ gogs.ssl | d(False) | bool }}"
+      _gogs_volume_size: "{{ gogs.volume_size | d('4Gi') }}"
+      _gogs_image: "{{ gogs.image | d('docker.io/wkulhanek/gogs') }}"
+      _gogs_image_tag: "{{ gogs.image_tag|d('latest') }}"
+      _gogs_postgresql_service_name: "postgresql-gogs"
+      _gogs_postgresql_database_name: gogsdb
+      _gogs_postgresql_user: "{{ gogs.postgresql.username | d('gogs') }}"
+      _gogs_postgresql_password: "{{ gogs.postgresql.password | d('gogs') }}"

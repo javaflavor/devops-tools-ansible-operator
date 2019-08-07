@@ -1,0 +1,44 @@
+---
+# DevOps Tools playbook.
+#
+# The following variables come from the ansible-operator
+# - meta.namespace
+# - meta.name (from the name of the CR)
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: Set SonarQube Service name to default value
+    set_fact:
+      sonarqube_service_name: "sonarqube"
+    when:
+      sonarqube_service_name is not defined
+
+  - name: Set up PostgreSQL for SonarQube
+    include_role:
+      name: ./roles/postgresql-ocp
+    vars:
+      _postgresql_state: "{{ sonarqube.enabled | ternary('present', 'absent') }}"
+      _postgresql_namespace: "{{ meta.namespace }}"
+      _postgresql_name: "postgresql-sonarqube"
+      _postgresql_database_name: "sonardb"
+      _postgresql_user: "{{ sonarqube.postgresql.username | d('sonar') }}"
+      _postgresql_password: "{{ sonarqube.postgresql.password | d('sonar') }}"
+      _postgresql_volume_size: "{{ sonarqube.postgresql.volume_size | d('2Gi') }}"
+      _postgresql_image: "{{ sonarqube.postgresql.image | d('registry.redhat.io/rhscl/postgresql-96-rhel7') }}"
+      _postgresql_image_tag: "{{ sonarqube.postgresql.image_tag | d('latest') }}"
+
+  - name: Set up Sonarqube
+    include_role:
+      name: ./roles/sonarqube-ocp
+    vars:
+      _sonarqube_state: "{{ sonarqube.enabled | ternary('present', 'absent') }}"
+      _sonarqube_namespace: "{{ meta.namespace }}"
+      _sonarqube_name: "{{ sonarqube_service_name }}"
+      _sonarqube_ssl: "{{ sonarqube.ssl | d(False) | bool }}"
+      _sonarqube_volume_size: "{{ sonarqube.volume_size | d('1Gi')}}"
+      _sonarqube_postgresql_service_name: "postgresql-sonarqube"
+      _sonarqube_postgresql_database_name: sonardb
+      _sonarqube_postgresql_user: "{{ sonarqube.postgresql.username | d('sonar') }}"
+      _sonarqube_postgresql_password: "{{ sonarqube.postgresql.password | d('sonar') }}"
+      _sonarqube_image_tag: "{{ sonarqube.image_tag | d('7.7') }}"

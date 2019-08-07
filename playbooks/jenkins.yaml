@@ -1,0 +1,19 @@
+---
+# DevOps Tools playbook.
+#
+# The following variables come from the ansible-operator
+# - meta.namespace
+# - meta.name (from the name of the CR)
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: Set up Jenkins
+    include_role:
+      name: ./roles/jenkins-ocp
+    vars:
+      _jenkins_state: "{{ jenkins.enabled | ternary('present', 'absent') }}"
+      _jenkins_namespace: "{{ meta.namespace }}"
+#      _jenkins_name: "{{ meta.name }}"
+      _jenkins_volume_size: "{{ jenkins.volume_size | d('1Gi') }}"
+      _jenkins_disable_administrative_monitors: "{{ jenkins_disable_administrative_monitors | d('false)') }}"
