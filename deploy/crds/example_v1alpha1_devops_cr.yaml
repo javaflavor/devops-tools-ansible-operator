@@ -1,0 +1,8 @@
+apiVersion: example.redhat.com/v1alpha1
+kind: DevOpsTools
+metadata:
+  name: devopstools
+spec:
+  postgresqlVolumeSize: 1Gi
+  gogsVolumeSize: 1Gi
+  gogsSsl: True

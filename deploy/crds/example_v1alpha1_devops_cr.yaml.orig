@@ -1,0 +1,7 @@
+apiVersion: example.redhat.com/v1alpha1
+kind: DevOpsTools
+metadata:
+  name: devopstools
+spec:
+  # Add fields here
+  size: 3

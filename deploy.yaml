@@ -1,0 +1,237 @@
+kind: Template
+apiVersion: v1
+metadata:
+  name: devops-toolkit
+objects:
+- apiVersion: apiextensions.k8s.io/v1beta1
+  kind: CustomResourceDefinition
+  metadata:
+    name: devopstools.example.redhat.com
+  spec:
+    group: example.redhat.com
+    names:
+      kind: DevOpsTools
+      listKind: DevOpsToolsList
+      plural: devopstools
+      singular: devopstools
+    scope: Namespaced
+    subresources:
+      status: {}
+    version: v1alpha1
+    versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+- apiVersion: authorization.openshift.io/v1
+  kind: ClusterRole
+  metadata:
+    labels:
+      rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    name: devopstools-aggregate-to-admin
+  rules:
+  - apiGroups:
+    - apps
+    resources:
+    - deployments/finalizers
+    verbs:
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+  - apiGroups:
+    - example.redhat.com
+    resources:
+    - '*'
+    verbs:
+    - create
+    - delete
+    - get
+    - list
+    - patch
+    - update
+    - watch
+- apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: devops-tools-operator
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    creationTimestamp: null
+    name: devops-tools-operator
+  rules:
+  - apiGroups:
+    - ""
+    resources:
+    - pods
+    - services
+    - endpoints
+    - persistentvolumeclaims
+    - events
+    - configmaps
+    - secrets
+    - serviceaccounts
+    - rolebindings
+    - roles
+    verbs:
+    - create
+    - update
+    - delete
+    - get
+    - list
+    - watch
+    - patch
+  - apiGroups:
+    - rbac.authorization.k8s.io
+    resources:
+    - rolebindings
+    - roles
+    verbs:
+    - create
+    - update
+    - delete
+    - get
+    - list
+    - watch
+    - patch
+  - apiGroups:
+    - authorization.openshift.io
+    resources:
+    - rolebindings
+    - roles
+    verbs:
+    - create
+    - update
+    - delete
+    - get
+    - list
+    - watch
+    - patch
+  - apiGroups:
+    - apps
+    resources:
+    - deployments
+    - daemonsets
+    - replicasets
+    - statefulsets
+    verbs:
+    - create
+    - update
+    - delete
+    - get
+    - list
+    - watch
+    - patch
+  - apiGroups:
+    - route.openshift.io
+    resources:
+    - routes
+    verbs:
+    - create
+    - update
+    - delete
+    - get
+    - list
+    - watch
+    - patch
+  - apiGroups:
+    - apps
+    resources:
+    - deployments
+    - deployments/finalizers
+    verbs:
+    - create
+    - update
+    - delete
+    - get
+    - list
+    - watch
+    - patch
+  - apiGroups:
+    - ""
+    resources:
+    - namespaces
+    verbs:
+    - get
+  - apiGroups:
+    - apps
+    resourceNames:
+    - devops-tools-operator
+    resources:
+    - deployments/finalizers
+    verbs:
+    - update
+  - apiGroups:
+    - example.redhat.com
+    resources:
+    - '*'
+    verbs:
+    - create
+    - update
+    - delete
+    - get
+    - list
+    - watch
+    - patch
+- kind: RoleBinding
+  apiVersion: rbac.authorization.k8s.io/v1
+  metadata:
+    name: devops-tools-operator
+  subjects:
+  - kind: ServiceAccount
+    name: devops-tools-operator
+  roleRef:
+    kind: Role
+    name: devops-tools-operator
+    apiGroup: rbac.authorization.k8s.io
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: devops-tools-operator
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        name: devops-tools-operator
+    template:
+      metadata:
+        labels:
+          name: devops-tools-operator
+      spec:
+        serviceAccountName: devops-tools-operator
+        containers:
+          - name: ansible
+            command:
+            - /usr/local/bin/ao-logs
+            - /tmp/ansible-operator/runner
+            - stdout
+            # Replace this with the built image name
+            image: "docker-registry.default.svc:5000/openshift/devops-tools-operator:v0.0.2"
+            imagePullPolicy: Always
+            volumeMounts:
+            - mountPath: /tmp/ansible-operator/runner
+              name: runner
+              readOnly: true
+          - name: operator
+            # Replace this with the built image name
+            image: "docker-registry.default.svc:5000/openshift/devops-tools-operator:v0.0.2"
+            imagePullPolicy: Always
+            volumeMounts:
+            - mountPath: /tmp/ansible-operator/runner
+              name: runner
+            env:
+              - name: WATCH_NAMESPACE
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.namespace
+              - name: POD_NAME
+                valueFrom:
+                  fieldRef:
+                    fieldPath: metadata.name
+              - name: OPERATOR_NAME
+                value: "devops-tools-operator"
+        volumes:
+          - name: runner
+            emptyDir: {}
