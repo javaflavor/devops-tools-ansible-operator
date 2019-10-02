@@ -1,0 +1,18 @@
+---
+# DevOps Tools playbook.
+#
+# The following variables come from the ansible-operator
+# - meta.namespace
+# - meta.name (from the name of the CR)
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: Set up CodeReady Workspaces
+    include_role:
+      name: ./roles/codeready-ocp
+    vars:
+      _codeready_state: "{{ codeready.enabled | ternary('present', 'absent') }}"
+      _codeready_namespace: "{{ codeready.namespace | default(meta.namespace) }}"
+      _codeready_distinct_namespace: "{{ codeready.distinctNamespace | default(false) }}"
+      _codeready_use_oauth: "{{ codeready.useOAuth | default(false) }}"

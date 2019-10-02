@@ -1,0 +1,6 @@
+---
+# defaults file for codeready-ocp
+_codeready_state: present
+_codeready_namespace: workspaces
+_codeready_distinct_namespace: false
+_codeready_use_oauth: false

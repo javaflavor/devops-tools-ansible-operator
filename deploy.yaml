@@ -60,6 +60,25 @@ objects:
     - name: v1alpha1
       served: true
       storage: true
+- apiVersion: apiextensions.k8s.io/v1beta1
+  kind: CustomResourceDefinition
+  metadata:
+    name: codereadies.example.redhat.com
+  spec:
+    group: example.redhat.com
+    names:
+      kind: CodeReady
+      listKind: CodeReadyList
+      plural: codereadies
+      singular: codeready
+    scope: Namespaced
+    subresources:
+      status: {}
+    version: v1alpha1
+    versions:
+    - name: v1alpha1
+      served: true
+      storage: true
 - apiVersion: authorization.openshift.io/v1
   kind: ClusterRole
   metadata:
@@ -103,6 +122,18 @@ objects:
     name: devops-tools-operator
   roleRef:
     name: admin
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRoleBinding
+  metadata:
+    name: self-provisioner-che
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: self-provisioner
+  subjects:
+  - kind: ServiceAccount
+    name: che
+    namespace: ${DEVOPS_NAMESPACE}
 - apiVersion: apps/v1
   kind: Deployment
   metadata:
@@ -125,7 +156,7 @@ objects:
             - /tmp/ansible-operator/runner
             - stdout
             # Replace this with the built image name
-            image: "docker-registry.default.svc:5000/openshift/devops-tools-operator:latest"
+            image: "${OPERATOR_IMAGE_REGISTORY}:${OPERATOR_IMAGE_TAG}"
             imagePullPolicy: Always
             volumeMounts:
             - mountPath: /tmp/ansible-operator/runner
@@ -133,7 +164,7 @@ objects:
               readOnly: true
           - name: operator
             # Replace this with the built image name
-            image: "docker-registry.default.svc:5000/openshift/devops-tools-operator:latest"
+            image: "${OPERATOR_IMAGE_REGISTORY}:${OPERATOR_IMAGE_TAG}"
             imagePullPolicy: Always
             volumeMounts:
             - mountPath: /tmp/ansible-operator/runner
@@ -152,3 +183,19 @@ objects:
         volumes:
           - name: runner
             emptyDir: {}
+parameters:
+- description: DevOps toolset installed namespace
+  displayName: DevOps namespace
+  name: DEVOPS_NAMESPACE
+  value: devops
+  required: true
+- description: DevOps operator image registory
+  displayName: DevOps operator image registry
+  name: OPERATOR_IMAGE_REGISTORY
+  value: docker-registry.default.svc:5000/devops/devops-tools-operator
+  required: true
+- description: DevOps operator image tag
+  displayName: DevOps operator image tag
+  name: OPERATOR_IMAGE_TAG
+  value: latest
+  required: true

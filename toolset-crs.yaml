@@ -5,7 +5,7 @@ metadata:
   name: gogs
 spec:
   gogs:
-    enabled: true
+    enabled: false
     ssl: True
     volumeSize: 1Gi
     # image: docker.io/wkulhanek/gogs
@@ -23,7 +23,7 @@ metadata:
   name: jenkins
 spec:
   jenkins:
-    enabled: true
+    enabled: false
     volumeSize: 1Gi
     jenkinsDisableAdministrativeMonitors: False
 ---
@@ -33,7 +33,7 @@ metadata:
   name: sonarqube
 spec:
   sonarqube:
-    enabled: true
+    enabled: false
     ssl: False
     volumeSize: 1Gi
     # image: docker.io/wkulhanek/gogs
@@ -44,4 +44,21 @@ spec:
       volumeSize: 2Gi
       # image: registry.redhat.io/rhscl/postgresql-96-rhel7
       # imageTag: latest
-
+---
+apiVersion: example.redhat.com/v1alpha1
+kind: CodeReady
+metadata:
+  name: codeready
+spec:
+  codeready:
+    enabled: true
+    # ServiceAccount/devops-tools-operator requires admin role of target namespace.
+    # If the namespace undefined, it is assumed that codeready operator is running
+    # in the same DevOps namespace.
+#    namespace: workspaces
+    # If distinctNamespace=true, all workspaces are created in the separate projects,
+    # which is recommended. Otherwise, all workspaces shares the same project namespace.
+    distinctNamespace: true
+    # If useOAuth=true, OAuth integration is configured. Users can choose both of local account
+    # and OpenShift acount. As of CodeReady 1.2, OAuth integration does not work on OpenShift 4.1.
+    useOAuth: false

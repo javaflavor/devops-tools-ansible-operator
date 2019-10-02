@@ -1,11 +1,6 @@
 #!/bin/sh -v
+BASEDIR=$(dirname $0)
 
-IMAGE=docker-registry-default.apps.7c01.example.opentlc.com/openshift/devops-tools-operator
-TAG=v0.0.1
-
-operator-sdk build ${IMAGE}:${TAG}
-
-docker push ${IMAGE}:${TAG}
-
-oc tag openshift/devops-tools-operator:${TAG} openshift/devops-tools-operator:latest
-
+oc new-build --name=devops-tools-operator --binary --strategy=docker
+oc patch bc/devops-tools-operator -p '{"spec":{"strategy":{"dockerStrategy":{"dockerfilePath":"build/Dockerfile"}}}}'
+oc start-build devops-tools-operator --from-dir=${BASEDIR} --follow

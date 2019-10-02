@@ -1,0 +1,90 @@
+---
+# tasks file for codeready-ocp
+
+- name: Set CheCluster custom resource to {{ _codeready_state }}
+  k8s:
+    state: "{{ _codeready_state }}"
+    definition:
+      apiVersion: org.eclipse.che/v1
+      kind: CheCluster
+      metadata:
+        name: codeready
+        namespace: "{{ _codeready_namespace }}"
+      spec:
+        server:
+          cheFlavor: codeready
+          tlsSupport: false
+          selfSignedCert: false
+        database:
+          externalDb: false
+          chePostgresHostName: postgres
+          chePostgresPort: "5432"
+          chePostgresUser: pgche
+          chePostgresPassword: q4s9uer3qGUk
+          chePostgresDb: dbche
+        auth:
+          externalIdentityProvider: false
+          openShiftoAuth: "{{ _codeready_use_oauth }}"
+          keycloakURL: ''
+          keycloakRealm: ''
+          keycloakClientId: ''
+        storage:
+          pvcStrategy: per-workspace
+          pvcClaimSize: 1Gi
+          preCreateSubPaths: true
+
+- name: Verify that the ConfigMap custom is created
+  when:
+    - _codeready_state == "present"
+  k8s_facts:
+    kind: ConfigMap
+    name: custom
+    namespace: "{{ _codeready_namespace }}"
+  register: configmap_custom
+  until:
+  - configmap_custom.resources != []
+  retries: 100
+  delay: 10
+
+- name: Patch ConfigMap to include CHE_INFRA_OPENSHIFT_PROJECT=NULL
+  when:
+    - _codeready_state == "present"
+    - _codeready_distinct_namespace|bool
+    - configmap_custom.resources[0].data.CHE_INFRA_OPENSHIFT_PROJECT is not defined or
+      configmap_custom.resources[0].data.CHE_INFRA_OPENSHIFT_PROJECT != "NULL"
+  command: oc patch cm/custom -p '{"data":{"CHE_INFRA_OPENSHIFT_PROJECT":"NULL"}}' -n {{ _codeready_namespace }}
+  register: patch_distinct_results
+
+- debug: var=patch_distinct_results
+
+- name: Patch ConfigMap to include CHE_INFRA_OPENSHIFT_PROJECT={{ _codeready_namespace }}
+  when:
+    - _codeready_state == "present"
+    - not _codeready_distinct_namespace|bool
+    - configmap_custom.resources[0].data.CHE_INFRA_OPENSHIFT_PROJECT is defined
+    - configmap_custom.resources[0].data.CHE_INFRA_OPENSHIFT_PROJECT == "NULL"
+  command: oc patch cm/custom -p '{"data":{"CHE_INFRA_OPENSHIFT_PROJECT":"{{ _codeready_namespace }}"}}' -n {{ _codeready_namespace }}
+  register: patch_shared_results
+
+- debug: var=patch_shared_results
+
+- name: Need restart codeready server if patched
+  when:
+    - patch_distinct_results.changed or patch_shared_results.changed
+  command: oc delete pod -l component=codeready -n {{ _codeready_namespace }}
+
+- name: Verify that the CodeReady Pod is running
+  when:
+    - _codeready_state == "present"
+  k8s_facts:
+    kind: Pod
+    label_selectors:
+      - component = codeready
+    namespace: "{{ _codeready_namespace }}"
+  register: codeready_pod
+  until:
+  - codeready_pod.resources != []
+  - codeready_pod.resources[0].status.phase == "Running"
+  - codeready_pod.resources[0].status.containerStatuses[0].ready
+  retries: 100
+  delay: 10
