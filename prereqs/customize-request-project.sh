@@ -12,3 +12,7 @@ if [ $(oc get template/project-request -n openshift-config -o yaml | grep 'name:
         -p="$(cat ${BASEDIR}/project-request-patch.yaml)"
 fi
 
+# Patch project config CR.
+oc patch project.config.openshift.io/cluster \
+    --type=merge \
+    -p '{"spec":{"projectRequestTemplate":{"name":"project-request"}}}'
