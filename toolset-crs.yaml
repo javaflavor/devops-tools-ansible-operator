@@ -51,7 +51,7 @@ metadata:
   name: codeready
 spec:
   codeready:
-    enabled: true
+    enabled: false
     # ServiceAccount/devops-tools-operator requires admin role of target namespace.
     # If the namespace undefined, it is assumed that codeready operator is running
     # in the same DevOps namespace.
@@ -62,3 +62,27 @@ spec:
     # If useOAuth=true, OAuth integration is configured. Users can choose both of local account
     # and OpenShift acount. As of CodeReady 1.2, OAuth integration does not work on OpenShift 4.1.
     useOAuth: false
+---
+apiVersion: example.redhat.com/v1alpha1
+kind: Rhamt
+metadata:
+  name: rhamt
+spec:
+  rhamt:
+    enabled: true
+    volumeCapacity: 10Gi
+    webConsoleRequestedCpu: 1
+    webConsoleRequestedMemory: 2Gi
+    executorRequestedCpu: 1
+    executorRequestedMemory: 2Gi
+    db:
+      volumeCapacity: 10Gi
+      database: WindupServicesDS
+      username: postgresuser
+      password: postgrespassword
+    # Image name will be: <rhamt.images.registry>/<rhamt.images.namespace>/windup-web-openshift:<rhamt.images.tag>
+    # and <rhamt.images.registry>/<rhamt.images.namespace>/windup-web-openshift-messaging-executor:<rhamt.images.tag>
+    images:
+      registry: docker.io
+      namespace: windup3
+      tag: 4.2.1.Final

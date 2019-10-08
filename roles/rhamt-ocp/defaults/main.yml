@@ -1,0 +1,16 @@
+---
+# defaults file for rhamt-ocp
+_rhamt_state: present
+_rhamt_namespace: rhamt
+_rhamt_db_volume_capacity: 10Gi
+_rhamt_volume_capacity: 10Gi
+_rhamt_web_console_requested_cpu: 1
+_rhamt_web_console_requested_memory: 2Gi
+_rhamt_executor_requested_cpu: 1
+_rhamt_executor_requested_memory: 2Gi
+_rhamt_db_database: WindupServicesDS
+_rhamt_db_username: postgresuser
+_rhamt_db_password: postgrespassword
+_rhamt_images_registry: docker.io
+_rhamt_images_namespace: windup3
+_rhamt_images_tag: 4.2.1.Final

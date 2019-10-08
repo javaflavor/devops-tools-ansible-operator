@@ -1,0 +1,28 @@
+---
+# DevOps Tools playbook.
+#
+# The following variables come from the ansible-operator
+# - meta.namespace
+# - meta.name (from the name of the CR)
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+  - name: Set up RHAMT
+    include_role:
+      name: ./roles/rhamt-ocp
+    vars:
+      _rhamt_state: "{{ rhamt.enabled | ternary('present', 'absent') }}"
+      _rhamt_namespace: "{{ meta.namespace }}"
+      _rhamt_db_volume_capacity: "{{ rhamt.db.volumeCapacity | d('10Gi') }}"
+      _rhamt_volume_capacity: "{{ rhamt.volumeCapacity | d('10Gi') }}"
+      _rhamt_web_console_requested_cpu: "{{ rhamt.webConsoleRequestedCpu | d(1) }}"
+      _rhamt_web_console_requested_memory: "{{ rhamt.webConsoleRequestedMemory | d('2Gi') }}"
+      _rhamt_executor_requested_cpu: "{{ rhamt.executorRequestedCpu | d(1) }}"
+      _rhamt_executor_requested_memory: "{{ rhamt.executorRequestedMemory | d('2Gi') }}"
+      _rhamt_db_database: "{{ rhamt.db.database | d('WindupServicesDS') }}"
+      _rhamt_db_username: "{{ rhamt.db.username | d('postgresuser') }}"
+      _rhamt_db_password: "{{ rhamt.db.password | d('postgrespassword') }}"
+      _rhamt_images_registry: "{{ rhamt.images.registry | d('docker.io') }}"
+      _rhamt_images_namespace: "{{ rhamt.images.namespace | d('windup3') }}"
+      _rhamt_images_tag: "{{ rhamt.images.tag | d('4.2.1.Final') }}"

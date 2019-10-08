@@ -1,0 +1,67 @@
+---
+# tasks file for rhamt-ocp
+- name: Verify that dc/rhamt-web-console exists
+  k8s_facts:
+    kind: DeploymentConfig
+    name: rhamt-web-console
+    namespace: "{{ _rhamt_namespace }}"
+  register: rhamt_dc
+
+- name: Deploy RHAMT using template
+  when:
+    - _rhamt_state == "present"
+    - rhamt_dc.resources == []
+  shell: |
+    oc process -f {{ role_path }}/files/web-template-empty-dir-executor.json \
+    -p SSO_REALM=rhamt \
+    -p POSTGRESQL_MAX_CONNECTIONS=200 \
+    -p DB_DATABASE={{ _rhamt_db_database }} \
+    -p DB_USERNAME={{ _rhamt_db_username }} \
+    -p DB_PASSWORD={{ _rhamt_db_password }} \
+    -p VOLUME_CAPACITY={{ _rhamt_db_volume_capacity }} \
+    -p RHAMT_VOLUME_CAPACITY={{ _rhamt_volume_capacity }} \
+    -p WEB_CONSOLE_REQUESTED_CPU={{ _rhamt_web_console_requested_cpu }} \
+    -p WEB_CONSOLE_REQUESTED_MEMORY={{ _rhamt_web_console_requested_memory }} \
+    -p EXECUTOR_REQUESTED_CPU={{ _rhamt_executor_requested_cpu }} \
+    -p EXECUTOR_REQUESTED_MEMORY={{ _rhamt_executor_requested_memory }} \
+    -p DOCKER_IMAGES_REGISTRY={{ _rhamt_images_registry }} \
+    -p DOCKER_IMAGES_USER={{ _rhamt_images_namespace }} \
+    -p DOCKER_IMAGES_TAG={{ _rhamt_images_tag }} \
+    -o yaml --local | oc create -f - -n {{ _rhamt_namespace }}
+
+- name: Verify that RHAMT Pod is running
+  when:
+    - _rhamt_state == "present"
+  k8s_facts:
+    kind: Pod
+    label_selectors:
+      - application = rhamt-web-console
+    namespace: "{{ _rhamt_namespace }}"
+  register: rhamt_pod
+  until:
+  - rhamt_pod.resources != []
+  - rhamt_pod.resources[0].status.phase == "Running"
+  retries: 50
+  delay: 5
+
+- name: Undeploy RHAMT using template
+  when:
+    - _rhamt_state == "absent"
+    - rhamt_dc.resources != []
+  shell: |
+    oc process -f {{ role_path }}/files/web-template-empty-dir-executor.json \
+    -p SSO_REALM=rhamt \
+    -p POSTGRESQL_MAX_CONNECTIONS=200 \
+    -p DB_DATABASE={{ _rhamt_db_database }} \
+    -p DB_USERNAME={{ _rhamt_db_username }} \
+    -p DB_PASSWORD={{ _rhamt_db_password }} \
+    -p VOLUME_CAPACITY={{ _rhamt_db_volume_capacity }} \
+    -p RHAMT_VOLUME_CAPACITY={{ _rhamt_volume_capacity }} \
+    -p WEB_CONSOLE_REQUESTED_CPU={{ _rhamt_web_console_requested_cpu }} \
+    -p WEB_CONSOLE_REQUESTED_MEMORY={{ _rhamt_web_console_requested_memory }} \
+    -p EXECUTOR_REQUESTED_CPU={{ _rhamt_executor_requested_cpu }} \
+    -p EXECUTOR_REQUESTED_MEMORY={{ _rhamt_executor_requested_memory }} \
+    -p DOCKER_IMAGES_REGISTRY={{ _rhamt_images_registry }} \
+    -p DOCKER_IMAGES_USER={{ _rhamt_images_namespace }} \
+    -p DOCKER_IMAGES_TAG={{ _rhamt_images_tag }} \
+    -o yaml --local | oc delete -f - -n {{ _rhamt_namespace }}
