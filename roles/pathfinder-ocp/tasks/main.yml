@@ -1,0 +1,81 @@
+---
+# tasks file for pathfinder-ocp
+- name: Verify that dc/mongodb exists
+  k8s_facts:
+    kind: DeploymentConfig
+    name: mongodb
+    namespace: "{{ _pathfinder_namespace }}"
+  register: mongodb_dc
+
+- name: Deploy MongoDB using template
+  when:
+    - _pathfinder_state == "present"
+    - mongodb_dc.resources == []
+  shell: |
+    oc new-app --template=mongodb-persistent -p MONGODB_DATABASE=pathfinder -n {{ _pathfinder_namespace }}
+
+- name: Verify that MongoDB Pod is running
+  when:
+    - _pathfinder_state == "present"
+  k8s_facts:
+    kind: Pod
+    label_selectors:
+      - app = mongodb-persistent
+    namespace: "{{ _pathfinder_namespace }}"
+  register: mongodb_pod
+  until:
+  - mongodb_pod.resources != []
+  - mongodb_pod.resources[0].status.phase == "Running"
+  retries: 20
+  delay: 5
+
+- name: Undeploy MongoDB using template
+  when:
+    - _pathfinder_state == "absent"
+    - mongodb_dc.resources != []
+  shell: |
+    oc get template mongodb-persistent -o yaml -n openshift | \
+      oc process -f - -p MONGODB_DATABASE=pathfinder -o yaml --local | \
+      oc delete -f - -n {{ _pathfinder_namespace }}
+
+- name: Verify that dc/pathfinder-* exists
+  k8s_facts:
+    kind: DeploymentConfig
+    label_selectors:
+      - bundle = pathfinder
+    namespace: "{{ _pathfinder_namespace }}"
+  register: pathfinder_dc
+
+- name: Deploy PathFinder using template
+  when:
+    - _pathfinder_state == "present"
+    - pathfinder_dc.resources == []
+  shell: |
+    oc process -f {{ role_path }}/files/pathfinder-full-template.yaml \
+      -p IMAGES_REGISTRY={{ _pathfinder_images_registry }} \
+      -p IMAGES_NAMESPACE={{ _pathfinder_images_namespace }} \
+      -p IMAGES_TAG={{ _pathfinder_images_tag }} | \
+      oc create -f - -n {{ _pathfinder_namespace }}
+
+- name: Verify that PathFinder Pod is running
+  when:
+    - _pathfinder_state == "present"
+  k8s_facts:
+    kind: Pod
+    label_selectors:
+      - app = pathfinder-server
+    namespace: "{{ _pathfinder_namespace }}"
+  register: pathfinder_pod
+  until:
+  - pathfinder_pod.resources != []
+  - pathfinder_pod.resources[0].status.phase == "Running"
+  retries: 50
+  delay: 5
+
+- name: Undeploy PathFinder using template
+  when:
+    - _pathfinder_state == "absent"
+    - pathfinder_dc.resources != []
+  shell: |
+    oc process -f {{ role_path }}/files/pathfinder-full-template.yaml | \
+      oc delete -f - -n {{ _pathfinder_namespace }}

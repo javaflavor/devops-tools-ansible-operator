@@ -23,3 +23,8 @@
   group: example.redhat.com
   kind: Rhamt
   playbook: /opt/ansible/rhamt.yaml
+
+- version: v1alpha1
+  group: example.redhat.com
+  kind: PathFinder
+  playbook: /opt/ansible/pathfinder.yaml

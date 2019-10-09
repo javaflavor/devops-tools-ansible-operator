@@ -1,0 +1,7 @@
+---
+# defaults file for pathfinder-ocp
+_pathfinder_state: present
+_pathfinder_namespace: pathfinder
+_pathfinder_images_registry: quay.io
+_pathfinder_images_namespace: pathfinder
+_pathfinder_images_tag: latest
