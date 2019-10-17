@@ -5,7 +5,7 @@ metadata:
   name: gogs
 spec:
   gogs:
-    enabled: false
+    enabled: true
     ssl: True
     volumeSize: 1Gi
     # image: docker.io/wkulhanek/gogs
@@ -23,9 +23,11 @@ metadata:
   name: jenkins
 spec:
   jenkins:
-    enabled: false
+    enabled: true
+    useOAuth: true
     volumeSize: 1Gi
-    jenkinsDisableAdministrativeMonitors: False
+    jenkinsDisableAdministrativeMonitors: false
+    plugins: gatling:1.2.6
 ---
 apiVersion: example.redhat.com/v1alpha1
 kind: SonarQube
@@ -69,7 +71,7 @@ metadata:
   name: rhamt
 spec:
   rhamt:
-    enabled: true
+    enabled: false
     volumeCapacity: 10Gi
     webConsoleRequestedCpu: 1
     webConsoleRequestedMemory: 2Gi
@@ -93,7 +95,7 @@ metadata:
   name: pathfinder
 spec:
   pathfinder:
-    enabled: true
+    enabled: false
     images:
       registry: quay.io
       namespace: pathfinder

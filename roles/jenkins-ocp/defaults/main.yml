@@ -4,23 +4,8 @@ _jenkins_state: present
 _jenkins_namespace: jenkins
 _jenkins_name: jenkins
 
+_jenkins_oauth: true
+_jenkins_memory_limit: 1Gi
 _jenkins_volume_size: 1Gi
-_jenkins_memory_request: 1Gi
-_jenkins_memory_limit: 2Gi
-_jenkins_cpu_request: 500m
-_jenkins_cpu_limit: 500m
-_jenkins_wait_for_init: "true"
 _jenkins_disable_administrative_monitors: "false"
-
-# Internal variables not to be changed
-_jenkins_oauth_config:
-  kind: OAuthRedirectReference
-  apiVersion: v1
-  reference:
-    kind: Route
-    name: "{{ _jenkins_name }}"
-_jenkins_service_dependencies:
-  name: "{{ _jenkins_name}}-jnlp"
-  namespace: ''
-  kind: Service
-
+_jenkins_plugins: ""
