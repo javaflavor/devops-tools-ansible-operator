@@ -12,6 +12,7 @@
     include_role:
       name: ./roles/pathfinder-ocp
     vars:
+      _pathfinder_enabled: "{{ pathfinder.enabled | bool }}"
       _pathfinder_state: "{{ pathfinder.enabled | ternary('present', 'absent') }}"
       _pathfinder_namespace: "{{ meta.namespace }}"
       _pathfinder_images_registry: "{{ pathfinder.images.registry | d('quay.io') }}"

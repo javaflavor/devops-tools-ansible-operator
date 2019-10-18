@@ -9,8 +9,8 @@
 
 - name: Deploy/Undeploy Jenkins using template
   when:
-    - (_jenkins_state == "present" and jenkins_dc.resources == []) or
-      (_jenkins_state == "absent" and jenkins_dc.resources != [])
+    - (_jenkins_enabled and jenkins_dc.resources == []) or
+      (not _jenkins_enabled and jenkins_dc.resources != [])
   shell: |
     oc get template/jenkins-persistent -o yaml -n openshift | \
     oc process -f - \
@@ -23,7 +23,7 @@
 
 - name: Verify that the jenkins Pod is running
   when:
-    - _jenkins_state == "present"
+    - _jenkins_enabled
   k8s_facts:
     kind: Pod
     label_selectors:
@@ -39,7 +39,7 @@
 
 - name: Install additional plugins, if any.
   when:
-    - _jenkins_state == "present"
+    - _jenkins_enabled
     - _jenkins_plugins != ''
     - _jenkins_plugins != env_INSTALL_PLUGINS
   shell: |
@@ -53,14 +53,14 @@
 
 - name: Wait jenkins Pod restarts.
   when:
-    - _jenkins_state == "present"
+    - _jenkins_enabled
     - setenv_results is defined
   pause:
     seconds: 5
 
 - name: Verify that the jenkins Pod is restarted, correctly.
   when:
-    - _jenkins_state == "present"
+    - _jenkins_enabled
     - setenv_results is defined
   k8s_facts:
     kind: Pod

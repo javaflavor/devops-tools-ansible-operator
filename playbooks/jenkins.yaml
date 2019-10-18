@@ -12,6 +12,7 @@
     include_role:
       name: ./roles/jenkins-ocp
     vars:
+      _jenkins_enabled: "{{ jenkins.enabled | bool }}"
       _jenkins_state: "{{ jenkins.enabled | ternary('present', 'absent') }}"
       _jenkins_namespace: "{{ meta.namespace }}"
 #      _jenkins_name: "{{ meta.name }}"

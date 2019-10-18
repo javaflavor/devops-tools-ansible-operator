@@ -7,10 +7,10 @@
     namespace: "{{ _rhamt_namespace }}"
   register: rhamt_dc
 
-- name: Deploy RHAMT using template
+- name: Deploy/Undeploy RHAMT using template
   when:
-    - _rhamt_state == "present"
-    - rhamt_dc.resources == []
+    - (_rhamt_enabled and rhamt_dc.resources == []) or
+      (not _rhamt_enabled and rhamt_dc.resources != [])
   shell: |
     oc process -f {{ role_path }}/files/web-template-empty-dir-executor.json \
     -p SSO_REALM=rhamt \
@@ -27,11 +27,13 @@
     -p DOCKER_IMAGES_REGISTRY={{ _rhamt_images_registry }} \
     -p DOCKER_IMAGES_USER={{ _rhamt_images_namespace }} \
     -p DOCKER_IMAGES_TAG={{ _rhamt_images_tag }} \
-    -o yaml --local | oc create -f - -n {{ _rhamt_namespace }}
+    -o yaml --local | oc {{ create_or_delete }} -f - -n {{ _rhamt_namespace }}
+  vars:
+    create_or_delete: "{{ _rhamt_enabled | ternary('create', 'delete') }}"
 
 - name: Verify that RHAMT Pod is running
   when:
-    - _rhamt_state == "present"
+    - _rhamt_enabled
   k8s_facts:
     kind: Pod
     label_selectors:
@@ -43,25 +45,3 @@
   - rhamt_pod.resources[0].status.phase == "Running"
   retries: 50
   delay: 5
-
-- name: Undeploy RHAMT using template
-  when:
-    - _rhamt_state == "absent"
-    - rhamt_dc.resources != []
-  shell: |
-    oc process -f {{ role_path }}/files/web-template-empty-dir-executor.json \
-    -p SSO_REALM=rhamt \
-    -p POSTGRESQL_MAX_CONNECTIONS=200 \
-    -p DB_DATABASE={{ _rhamt_db_database }} \
-    -p DB_USERNAME={{ _rhamt_db_username }} \
-    -p DB_PASSWORD={{ _rhamt_db_password }} \
-    -p VOLUME_CAPACITY={{ _rhamt_db_volume_capacity }} \
-    -p RHAMT_VOLUME_CAPACITY={{ _rhamt_volume_capacity }} \
-    -p WEB_CONSOLE_REQUESTED_CPU={{ _rhamt_web_console_requested_cpu }} \
-    -p WEB_CONSOLE_REQUESTED_MEMORY={{ _rhamt_web_console_requested_memory }} \
-    -p EXECUTOR_REQUESTED_CPU={{ _rhamt_executor_requested_cpu }} \
-    -p EXECUTOR_REQUESTED_MEMORY={{ _rhamt_executor_requested_memory }} \
-    -p DOCKER_IMAGES_REGISTRY={{ _rhamt_images_registry }} \
-    -p DOCKER_IMAGES_USER={{ _rhamt_images_namespace }} \
-    -p DOCKER_IMAGES_TAG={{ _rhamt_images_tag }} \
-    -o yaml --local | oc delete -f - -n {{ _rhamt_namespace }}

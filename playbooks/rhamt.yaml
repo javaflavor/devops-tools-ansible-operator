@@ -12,6 +12,7 @@
     include_role:
       name: ./roles/rhamt-ocp
     vars:
+      _rhamt_enabled: "{{ rhamt.enabled | bool }}"
       _rhamt_state: "{{ rhamt.enabled | ternary('present', 'absent') }}"
       _rhamt_namespace: "{{ meta.namespace }}"
       _rhamt_db_volume_capacity: "{{ rhamt.db.volumeCapacity | d('10Gi') }}"
