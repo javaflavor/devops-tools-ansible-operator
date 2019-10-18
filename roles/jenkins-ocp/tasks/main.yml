@@ -43,7 +43,9 @@
     - _jenkins_plugins != ''
     - _jenkins_plugins != env_INSTALL_PLUGINS
   shell: |
-    oc set env dc/jenkins INSTALL_PLUGINS="{{ _jenkins_plugins }}"
+    oc set env dc/jenkins \
+      INSTALL_PLUGINS="{{ _jenkins_plugins }}" \
+      OVERRIDE_PV_PLUGINS_WITH_IMAGE_PLUGINS=true
   register: setenv_results
   vars:
     query: "resources.spec.template.spec.containers[0].env[?(@.name == 'INSTALL_PLUGINS')].value"
