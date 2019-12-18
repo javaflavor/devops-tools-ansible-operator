@@ -2,7 +2,7 @@ FROM quay.io/operator-framework/ansible-operator:v0.13.0
 
 USER root
 
-ENV OC_VERSION=4.1.18
+ENV OC_VERSION=4.2.10
 
 RUN curl -o openshift-client-linux-${OC_VERSION}.tar.gz https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${OC_VERSION}/openshift-client-linux-${OC_VERSION}.tar.gz \
     && tar zxvf openshift-client-linux-${OC_VERSION}.tar.gz -C /usr/bin \
