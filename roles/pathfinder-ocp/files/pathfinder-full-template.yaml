@@ -72,11 +72,11 @@ objects:
     - annotations: null
       from:
         kind: DockerImage
-        name: ${IMAGES_REGISTRY}/${IMAGES_NAMESPACE}/pathfinder-server
+        name: ${IMAGES_REGISTRY}/${IMAGES_NAMESPACE}/pathfinder-server:${IMAGES_TAG}
       generation: null
       importPolicy:
         scheduled: true
-      name: ${IMAGES_TAG}
+      name: latest
       referencePolicy:
         type: ""
 - apiVersion: v1
@@ -96,11 +96,11 @@ objects:
     - annotations: null
       from:
         kind: DockerImage
-        name: ${IMAGES_REGISTRY}/${IMAGES_NAMESPACE}/pathfinder-ui
+        name: ${IMAGES_REGISTRY}/${IMAGES_NAMESPACE}/pathfinder-ui:${IMAGES_TAG}
       generation: null
       importPolicy:
         scheduled: true
-      name: ${IMAGES_TAG}
+      name: latest
       referencePolicy:
         type: ""
 - apiVersion: v1
