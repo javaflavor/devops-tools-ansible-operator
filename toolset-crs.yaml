@@ -99,4 +99,4 @@ spec:
     images:
       registry: quay.io
       namespace: pathfinder
-      tag: latest
+      tag: a0dc56c
