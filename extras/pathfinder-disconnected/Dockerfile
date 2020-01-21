@@ -4,8 +4,6 @@ RUN mkdir -p /opt/webserver/webapps/ROOT/ext \
 	&& cd /opt/webserver/webapps/ROOT \
 	&& jar xvf /opt/webserver/webapps/ROOT.war
 
-#COPY ext /opt/webserver/webapps/ROOT/ext/
-#COPY patch-resources.sh /opt/webserver/webapps/ROOT/
 COPY *.sh /opt/webserver/webapps/ROOT/
 
 RUN /opt/webserver/webapps/ROOT/patch-resources.sh \
