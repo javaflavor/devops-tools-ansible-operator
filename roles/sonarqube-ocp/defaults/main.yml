@@ -11,9 +11,9 @@ _sonarqube_postgresql_user: sonar
 _sonarqube_postgresql_password: sonar
 _sonarqube_volume_size: 1Gi
 _sonarqube_memory_request: 2Gi
-_sonarqube_memory_limit: 2Gi
-_sonarqube_cpu_request: 300m
-_sonarqube_cpu_limit: 500m
+_sonarqube_memory_limit: 3Gi
+_sonarqube_cpu_request: 1
+_sonarqube_cpu_limit: 2
 _sonarqube_wait_for_init: true
-_sonarqube_image: docker.io/wkulhanek/sonarqube
+_sonarqube_image: quay.io/gpte-devops-automation/sonarqube
 _sonarqube_image_tag: latest

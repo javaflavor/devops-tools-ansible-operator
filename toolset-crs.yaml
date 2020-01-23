@@ -8,7 +8,7 @@ spec:
     enabled: true
     ssl: True
     volumeSize: 1Gi
-    # image: docker.io/wkulhanek/gogs
+    # image: quay.io/gpte-devops-automation/gogs
     # imageTag: latest
     postgresql:
       username: gogs_user
@@ -38,8 +38,8 @@ spec:
     enabled: false
     ssl: False
     volumeSize: 1Gi
-    # image: docker.io/wkulhanek/gogs
-    # imageTag: 7.7
+    # image: quay.io/gpte-devops-automation/sonarqube
+    # imageTag: 7.9.2
     postgresql:
       username: sonar_user
       password: sonar_password

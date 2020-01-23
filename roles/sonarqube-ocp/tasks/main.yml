@@ -55,6 +55,7 @@
         namespace: "{{ _sonarqube_namespace }}"
         labels:
           app: "{{ _sonarqube_name }}"
+          tuned.openshift.io/elasticsearch: "true"
       spec:
         containers:
         - image: "{{ _sonarqube_image }}:{{ _sonarqube_image_tag }}"

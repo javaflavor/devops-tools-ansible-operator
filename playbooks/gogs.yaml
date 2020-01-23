@@ -36,7 +36,7 @@
       _gogs_name: "{{ gogs_service_name }}"
       _gogs_ssl: "{{ gogs.ssl | d(False) | bool }}"
       _gogs_volume_size: "{{ gogs.volume_size | d('4Gi') }}"
-      _gogs_image: "{{ gogs.image | d('docker.io/wkulhanek/gogs') }}"
+      _gogs_image: "{{ gogs.image | d('quay.io/gpte-devops-automation/gogs') }}"
       _gogs_image_tag: "{{ gogs.image_tag|d('latest') }}"
       _gogs_postgresql_service_name: "postgresql-gogs"
       _gogs_postgresql_database_name: gogsdb
